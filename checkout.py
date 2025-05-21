@@ -25,7 +25,7 @@ class StoreItem:
     def __repr__(self):
         return f"StoreItem(name: '{self.name}', cost: {self.base_cost})"
 
-#cart item class - wrapper for storing items in the checkout
+#cart item class - wrapper for storing cart_items in the checkout
 class CartItem:
 
     def __init__(self, store_item: StoreItem, actual_cost: float = None):
@@ -43,8 +43,7 @@ class CheckOut:
     
     def __init__(self, pricing_rules: List[PricingRule]):
         self.pricing_rules = pricing_rules
-        self.items = []
-        self.total_cost = 0
+        self.cart_items: List[CartItem] = []
 
     #checks through list of pricing rules - finds the first applicable one and applies it, otherwise returns the regular cost
     #LIMITATION - more than one discount can't be applied at once, discount priority
@@ -56,25 +55,25 @@ class CheckOut:
         return item.base_cost
 
     def get_total_cost(self):
-        return sum(item.actual_cost for item in self.items)
+        return sum(item.actual_cost for item in self.cart_items)
 
     def get_item_summary(self):
         total_cost = self.get_total_cost()
-        for item in self.items:
+        for item in self.cart_items:
             print(item)
         print(f"Total cost: {total_cost}")
 
     def scan(self, item: StoreItem):
-        item_count = sum(1 for i in self.items if i.name == item.name) + 1
+        item_count = sum(1 for i in self.cart_items if i.name == item.name) + 1
         current_cost = self.check_pricing_rules(item, item_count)
         cart_item = CartItem(item, current_cost)
-        self.items.append(cart_item)
+        self.cart_items.append(cart_item)
 
-    #unscan method for returning items/missed item
+    #unscan method for returning cart_items/missed item
     def unscan(self, item: StoreItem):
-        for i in range(len(self.items) - 1, -1, -1):
-            if self.items[i].name == item.name:
-                self.items.pop(i)
+        for i in range(len(self.cart_items) - 1, -1, -1):
+            if self.cart_items[i].name == item.name:
+                self.cart_items.pop(i)
                 break
         else:
             raise ValueError(f"{item.name} not in checkout list.")
